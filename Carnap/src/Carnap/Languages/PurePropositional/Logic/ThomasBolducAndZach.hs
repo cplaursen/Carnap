@@ -34,6 +34,7 @@ data ThomasBolducAndZachTFLCore = ConjIntro  | As
                                 | BicoIntro1 | BicoIntro2
                                 | BicoIntro3 | BicoIntro4
                                 | BicoElim1  | BicoElim2
+                                | BicoNegElim| BicoNegIntro
                                 | NegeIntro1 | NegeIntro2
                                 | NegeElim   | ContElim 
                                 | Indirect1  | Indirect2
@@ -52,33 +53,35 @@ data ThomasBolducAndZachTFL = Core ThomasBolducAndZachTFLCore
                             --skipping derived rules for now
 
 instance Show ThomasBolducAndZachTFLCore where
-        show ConjIntro  = "∧I"
-        show ConjElim1  = "∧E"
-        show ConjElim2  = "∧E"
-        show NegeIntro1 = "¬I"
-        show NegeIntro2 = "¬I"
-        show NegeElim   = "¬E"
-        show Indirect1  = "IP"
-        show Indirect2  = "IP"
-        show CondIntro1 = "→I"
-        show CondIntro2 = "→I"
-        show CondElim   = "→E"
-        show ContElim   = "X"
-        show DisjElim1  = "∨E"
-        show DisjElim2  = "∨E"
-        show DisjElim3  = "∨E"
-        show DisjElim4  = "∨E"
-        show DisjIntro1 = "∨I"
-        show DisjIntro2 = "∨I"
-        show BicoIntro1 = "↔I"
-        show BicoIntro2 = "↔I"
-        show BicoIntro3 = "↔I"
-        show BicoIntro4 = "↔I"
-        show BicoElim1  = "↔E"
-        show BicoElim2  = "↔E"
-        show Reiterate  = "R"
-        show As         = "AS"
-        show (Pr _)     = "PR"
+        show ConjIntro    = "∧I"
+        show ConjElim1    = "∧E"
+        show ConjElim2    = "∧E"
+        show NegeIntro1   = "¬I"
+        show NegeIntro2   = "¬I"
+        show NegeElim     = "¬E"
+        show Indirect1    = "IP"
+        show Indirect2    = "IP"
+        show CondIntro1   = "→I"
+        show CondIntro2   = "→I"
+        show CondElim     = "→E"
+        show ContElim     = "X"
+        show DisjElim1    = "∨E"
+        show DisjElim2    = "∨E"
+        show DisjElim3    = "∨E"
+        show DisjElim4    = "∨E"
+        show DisjIntro1   = "∨I"
+        show DisjIntro2   = "∨I"
+        show BicoIntro1   = "↔I"
+        show BicoIntro2   = "↔I"
+        show BicoIntro3   = "↔I"
+        show BicoIntro4   = "↔I"
+        show BicoNegElim  = "¬↔E"
+        show BicoNegIntro = "¬↔I"
+        show BicoElim1    = "↔E"
+        show BicoElim2    = "↔E"
+        show Reiterate    = "R"
+        show As           = "AS"
+        show (Pr _)       = "PR"
 
 instance Show ThomasBolducAndZachTFL where
         show (Core x)   = show x
@@ -96,33 +99,35 @@ instance Show ThomasBolducAndZachTFL where
         show DeMorgan4  = "DeM"
 
 instance Inference ThomasBolducAndZachTFLCore PurePropLexicon (Form Bool) where
-        ruleOf ConjIntro  = adjunction
-        ruleOf ConjElim1  = simplificationVariations !! 0
-        ruleOf ConjElim2  = simplificationVariations !! 1
-        ruleOf NegeIntro1 = constructiveFalsumReductioVariations !! 0
-        ruleOf NegeIntro2 = constructiveFalsumReductioVariations !! 1
-        ruleOf NegeElim   = falsumIntroduction
-        ruleOf Indirect1  = nonConstructiveFalsumReductioVariations !! 0
-        ruleOf Indirect2  = nonConstructiveFalsumReductioVariations !! 1
-        ruleOf CondIntro1 = conditionalProofVariations !! 0
-        ruleOf CondIntro2 = conditionalProofVariations !! 1
-        ruleOf CondElim   = modusPonens
-        ruleOf ContElim   = falsumElimination
-        ruleOf DisjIntro1 = additionVariations !! 0
-        ruleOf DisjIntro2 = additionVariations !! 1 
-        ruleOf DisjElim1  = proofByCasesVariations !! 0
-        ruleOf DisjElim2  = proofByCasesVariations !! 1
-        ruleOf DisjElim3  = proofByCasesVariations !! 2
-        ruleOf DisjElim4  = proofByCasesVariations !! 3
-        ruleOf BicoIntro1 = biconditionalProofVariations !! 0
-        ruleOf BicoIntro2 = biconditionalProofVariations !! 1
-        ruleOf BicoIntro3 = biconditionalProofVariations !! 2
-        ruleOf BicoIntro4 = biconditionalProofVariations !! 3
-        ruleOf BicoElim1  = biconditionalPonensVariations !! 0
-        ruleOf BicoElim2  = biconditionalPonensVariations !! 1
-        ruleOf Reiterate  = identityRule
-        ruleOf As         = axiom
-        ruleOf (Pr _)     = axiom
+        ruleOf ConjIntro    = adjunction
+        ruleOf ConjElim1    = simplificationVariations !! 0
+        ruleOf ConjElim2    = simplificationVariations !! 1
+        ruleOf NegeIntro1   = constructiveFalsumReductioVariations !! 0
+        ruleOf NegeIntro2   = constructiveFalsumReductioVariations !! 1
+        ruleOf NegeElim     = falsumIntroduction
+        ruleOf Indirect1    = nonConstructiveFalsumReductioVariations !! 0
+        ruleOf Indirect2    = nonConstructiveFalsumReductioVariations !! 1
+        ruleOf CondIntro1   = conditionalProofVariations !! 0
+        ruleOf CondIntro2   = conditionalProofVariations !! 1
+        ruleOf CondElim     = modusPonens
+        ruleOf ContElim     = falsumElimination
+        ruleOf DisjIntro1   = additionVariations !! 0
+        ruleOf DisjIntro2   = additionVariations !! 1 
+        ruleOf DisjElim1    = proofByCasesVariations !! 0
+        ruleOf DisjElim2    = proofByCasesVariations !! 1
+        ruleOf DisjElim3    = proofByCasesVariations !! 2
+        ruleOf DisjElim4    = proofByCasesVariations !! 3
+        ruleOf BicoIntro1   = biconditionalProofVariations !! 0
+        ruleOf BicoIntro2   = biconditionalProofVariations !! 1
+        ruleOf BicoIntro3   = biconditionalProofVariations !! 2
+        ruleOf BicoIntro4   = biconditionalProofVariations !! 3
+        ruleOf BicoNegElim  = negatedBiconditionalVariations !! 0
+        ruleOf BicoNegIntro = negatedBiconditionalVariations !! 1
+        ruleOf BicoElim1    = biconditionalPonensVariations !! 0
+        ruleOf BicoElim2    = biconditionalPonensVariations !! 1
+        ruleOf Reiterate    = identityRule
+        ruleOf As           = axiom
+        ruleOf (Pr _)       = axiom
 
         indirectInference x
             | x `elem` [ DisjElim1, DisjElim2, DisjElim3, DisjElim4
@@ -204,8 +209,8 @@ instance Inference ThomasBolducAndZachTFL PurePropLexicon (Form Bool) where
 parseThomasBolducAndZachTFLCore :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [ThomasBolducAndZachTFLCore]
 parseThomasBolducAndZachTFLCore rtc = do r <- choice (map (try . string) [ "AS","PR","&I","/\\I", "∧I","&E","/\\E","∧E", "~I","-I", "¬I"
                                                                       , "~E","-E", "¬E","IP","->I", ">I", "=>I", "→I","->E", "=>E", ">E", "→E", "X"
-                                                                      , "vI","\\/I", "|I", "∨I", "vE","\\/E", "|E", "∨E","<->I", "↔I","<->E"
-                                                                      , "↔E","R"])
+                                                                      , "vI","\\/I", "|I", "∨I", "vE","\\/E", "|E", "∨E","<->I", "↔I","<->E", "↔E"
+                                                                      , "~<->E", "¬↔E", "~<->I", "¬↔I", "R"])
                                          case r of
                                             r | r == "AS"   -> return [As]
                                               | r == "PR" -> return [Pr (problemPremises rtc)]
@@ -219,6 +224,8 @@ parseThomasBolducAndZachTFLCore rtc = do r <- choice (map (try . string) [ "AS",
                                               | r == "X"    -> return [ContElim]
                                               | r `elem` ["∨I","vI", "|I", "\\/I"] -> return [DisjIntro1, DisjIntro2]
                                               | r `elem` ["∨E","vE", "|E", "\\/E"] -> return [DisjElim1, DisjElim2, DisjElim3, DisjElim4]
+                                              | r `elem` ["~<->E", "¬↔E"] -> return [BicoNegElim]
+                                              | r `elem` ["~<->I", "¬↔I"] -> return [BicoNegIntro]
                                               | r `elem` ["<->I","↔I"] -> return [BicoIntro1, BicoIntro2, BicoIntro3, BicoIntro4]
                                               | r `elem` ["<->E","↔E"]   -> return [BicoElim1, BicoElim2]
                                               | r == "R" -> return [Reiterate]
