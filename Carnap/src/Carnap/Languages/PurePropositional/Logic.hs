@@ -12,6 +12,8 @@ module Carnap.Languages.PurePropositional.Logic
     , parseMagnusSLPlus, MagnusSLPlus, magnusSLPlusCalc
     , parseThomasBolducAndZachTFL, ThomasBolducAndZachTFL, thomasBolducAndZachTFLCalc
     , parseThomasBolducAndZachTFLCore, ThomasBolducAndZachTFLCore, thomasBolducAndZachTFL2019Calc
+    , parseFosterAndLaursenTFL, FosterAndLaursenTFL, fosterAndLaursenTFLCalc
+    , parseFosterAndLaursenTFLCore, FosterAndLaursenTFLCore, fosterAndLaursenTFL2019Calc
     , parseEbelsDugganTFL, EbelsDugganTFL, ebelsDugganTFLCalc
     , parseTomassiPL, TomassiPL, tomassiPLCalc
     , parseHardegreeSL2006 , parseHardegreeSL, HardegreeSL, HardegreeSL2006, hardegreeSLCalc
@@ -39,6 +41,7 @@ import Carnap.Languages.PurePropositional.Logic.Cortens
 import Carnap.Languages.PurePropositional.Logic.Davis
 import Carnap.Languages.PurePropositional.Logic.EbelsDuggan
 import Carnap.Languages.PurePropositional.Logic.Equivalence
+import Carnap.Languages.PurePropositional.Logic.FosterAndLaursen
 import Carnap.Languages.PurePropositional.Logic.Gallow
 import Carnap.Languages.PurePropositional.Logic.Gamut
 import Carnap.Languages.PurePropositional.Logic.Gentzen
@@ -72,6 +75,9 @@ ofPropSys f sys | sys == "LogicBookSD"                   = Just $ f logicBookSDC
                 | sys == "cortensSL"                     = Just $ f cortensSLCalc
                 | sys == "davisSL"                       = Just $ f davisSLCalc
                 | sys == "ebelsDugganTFL"                = Just $ f ebelsDugganTFLCalc 
+                | sys == "fosterAndLaursenTFL"           = Just $ f fosterAndLaursenTFLCalc
+                | sys == "fosterAndLaursenTFL2019"       = Just $ f fosterAndLaursenTFL2019Calc
+                | sys == "fosterAndLaursenTFLCore"       = Just $ f fosterAndLaursenTFLCoreCalc
                 | sys == "gallowSL"                      = Just $ f gallowSLCalc
                 | sys == "gallowSLPlus"                  = Just $ f gallowSLPlusCalc
                 | sys == "gamutIPND"                     = Just $ f gamutIPNDCalc

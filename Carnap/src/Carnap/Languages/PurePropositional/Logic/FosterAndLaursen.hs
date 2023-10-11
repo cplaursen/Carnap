@@ -1,9 +1,9 @@
 {-#LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
-module Carnap.Languages.PurePropositional.Logic.ThomasBolducAndZach
-    ( parseThomasBolducAndZachTFLCore, ThomasBolducAndZachTFLCore(..)
-    , parseThomasBolducAndZachTFL, ThomasBolducAndZachTFL(..)
-    , thomasBolducAndZachTFL2019Calc, thomasBolducAndZachTFLCalc, thomasBolducAndZachTFLCoreCalc
-    , thomasBolducAndZachNotation) where
+module Carnap.Languages.PurePropositional.Logic.FosterAndLaursen
+    ( parseFosterAndLaursenTFLCore, FosterAndLaursenTFLCore(..)
+    , parseFosterAndLaursenTFL, FosterAndLaursenTFL(..)
+    , fosterAndLaursenTFL2019Calc, fosterAndLaursenTFLCalc, fosterAndLaursenTFLCoreCalc
+    , fosterAndLaursenNotation) where
 
 import Data.Map as M (lookup, Map)
 import Text.Parsec
@@ -24,7 +24,7 @@ import Carnap.Languages.Util.LanguageClasses
 from the Calgary Remix of Forall x book
 -}
 
-data ThomasBolducAndZachTFLCore = ConjIntro  | As
+data FosterAndLaursenTFLCore = ConjIntro  | As
                                 | ConjElim1  | ConjElim2
                                 | DisjIntro1 | DisjIntro2
                                 | DisjElim1  | DisjElim2
@@ -41,9 +41,9 @@ data ThomasBolducAndZachTFLCore = ConjIntro  | As
                                 | Pr (Maybe [(ClassicalSequentOver PurePropLexicon (Sequent (Form Bool)))])
                                 deriving (Eq)
 
-data ThomasBolducAndZachTFL = Core ThomasBolducAndZachTFLCore
+data FosterAndLaursenTFL = Core FosterAndLaursenTFLCore
                             | DisSyllo1    | DisSyllo2
-                            | ModTollens   | DoubleNeg  
+                            | ModTollens   | DoubleNegElim  
                             | DoubleNegIntro
                             | Lem1         | Lem2
                             | Lem3         | Lem4
@@ -54,7 +54,7 @@ data ThomasBolducAndZachTFL = Core ThomasBolducAndZachTFLCore
                             deriving (Eq)
                             --skipping derived rules for now
 
-instance Show ThomasBolducAndZachTFLCore where
+instance Show FosterAndLaursenTFLCore where
         show ConjIntro    = "∧I"
         show ConjElim1    = "∧E"
         show ConjElim2    = "∧E"
@@ -83,12 +83,12 @@ instance Show ThomasBolducAndZachTFLCore where
         show As           = "AS"
         show (Pr _)       = "PR"
 
-instance Show ThomasBolducAndZachTFL where
+instance Show FosterAndLaursenTFL where
         show (Core x)     = show x
         show DisSyllo1    = "DS"
         show DisSyllo2    = "DS"
         show ModTollens   = "MT"
-        show DoubleNeg = "DNE"
+        show DoubleNegElim = "DNE"
         show DoubleNegIntro= "DNI"
         show Lem1         = "LEM"
         show Lem2         = "LEM"
@@ -103,7 +103,7 @@ instance Show ThomasBolducAndZachTFL where
         show BicoMT1      = "BMT"
         show BicoMT2      = "BMT"
 
-instance Inference ThomasBolducAndZachTFLCore PurePropLexicon (Form Bool) where
+instance Inference FosterAndLaursenTFLCore PurePropLexicon (Form Bool) where
         ruleOf ConjIntro    = adjunction
         ruleOf ConjElim1    = simplificationVariations !! 0
         ruleOf ConjElim2    = simplificationVariations !! 1
@@ -164,12 +164,12 @@ instance Inference ThomasBolducAndZachTFLCore PurePropLexicon (Form Bool) where
         restriction (Pr prems) = Just (premConstraint prems)
         restriction _ = Nothing
 
-instance Inference ThomasBolducAndZachTFL PurePropLexicon (Form Bool) where
+instance Inference FosterAndLaursenTFL PurePropLexicon (Form Bool) where
         ruleOf (Core x)   = ruleOf x
         ruleOf DisSyllo1  = modusTollendoPonensVariations !! 0 
         ruleOf DisSyllo2  = modusTollendoPonensVariations !! 1
         ruleOf ModTollens = modusTollens
-        ruleOf DoubleNeg  = doubleNegationElimination
+        ruleOf DoubleNegElim  = doubleNegationElimination
         ruleOf DoubleNegIntro = doubleNegationIntroduction
         ruleOf Lem1       = tertiumNonDaturVariations !! 0 
         ruleOf Lem2       = tertiumNonDaturVariations !! 1
@@ -214,52 +214,52 @@ instance Inference ThomasBolducAndZachTFL PurePropLexicon (Form Bool) where
         restriction (Core x) = restriction x
         restriction _ = Nothing
 
-parseThomasBolducAndZachTFLCore :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [ThomasBolducAndZachTFLCore]
-parseThomasBolducAndZachTFLCore rtc = do r <- choice (map (try . string) [ "AS","PR","&I","/\\I", "∧I","&E","/\\E","∧E", "~I","-I", "¬I"
-                                                                      , "~E","-E", "¬E","IP","->I", ">I", "=>I", "→I","->E", "=>E", ">E", "→E", "X"
-                                                                      , "vI","\\/I", "|I", "∨I", "vE","\\/E", "|E", "∨E","<->I", "↔I","<->E", "↔E"
-                                                                      , "R"])
-                                         case r of
-                                            r | r == "AS"   -> return [As]
-                                              | r == "PR" -> return [Pr (problemPremises rtc)]
-                                              | r `elem` ["&I","/\\I","∧I"] -> return [ConjIntro]
-                                              | r `elem` ["&E","/\\E","∧E"] -> return [ConjElim1, ConjElim2]
-                                              | r `elem` ["~I","¬I","-I"]   -> return [NegeIntro1, NegeIntro2]
-                                              | r `elem` ["~E","¬E","-E"]   -> return [NegeElim]
-                                              | r == "IP" -> return [Indirect1, Indirect2]
-                                              | r `elem` ["->I", ">I", "=>I", "→I"] -> return [CondIntro1,CondIntro2]
-                                              | r `elem` ["->E", ">E", "=>E", "→E"]  -> return [CondElim]
-                                              | r == "X"    -> return [ContElim]
-                                              | r `elem` ["∨I","vI", "|I", "\\/I"] -> return [DisjIntro1, DisjIntro2]
-                                              | r `elem` ["∨E","vE", "|E", "\\/E"] -> return [DisjElim1, DisjElim2, DisjElim3, DisjElim4]
-                                              | r `elem` ["<->I","↔I"] -> return [BicoIntro1, BicoIntro2, BicoIntro3, BicoIntro4]
-                                              | r `elem` ["<->E","↔E"]   -> return [BicoElim1, BicoElim2]
-                                              | r == "R" -> return [Reiterate]
+parseFosterAndLaursenTFLCore :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [FosterAndLaursenTFLCore]
+parseFosterAndLaursenTFLCore rtc = do r <- choice (map (try . string) [ "AS","PR","&I","/\\I", "∧I","&E","/\\E","∧E", "~I","-I", "¬I"
+                                                                   , "~E","-E", "¬E","IP","->I", ">I", "=>I", "→I","->E", "=>E", ">E", "→E", "X"
+                                                                   , "vI","\\/I", "|I", "∨I", "vE","\\/E", "|E", "∨E","<->I", "↔I","<->E", "↔E"
+                                                                   , "R"])
+                                      case r of
+                                         r | r == "AS"   -> return [As]
+                                           | r == "PR" -> return [Pr (problemPremises rtc)]
+                                           | r `elem` ["&I","/\\I","∧I"] -> return [ConjIntro]
+                                           | r `elem` ["&E","/\\E","∧E"] -> return [ConjElim1, ConjElim2]
+                                           | r `elem` ["~I","¬I","-I"]   -> return [NegeIntro1, NegeIntro2]
+                                           | r `elem` ["~E","¬E","-E"]   -> return [NegeElim]
+                                           | r == "IP" -> return [Indirect1, Indirect2]
+                                           | r `elem` ["->I", ">I", "=>I", "→I"] -> return [CondIntro1,CondIntro2]
+                                           | r `elem` ["->E", ">E", "=>E", "→E"]  -> return [CondElim]
+                                           | r == "X"    -> return [ContElim]
+                                           | r `elem` ["∨I","vI", "|I", "\\/I"] -> return [DisjIntro1, DisjIntro2]
+                                           | r `elem` ["∨E","vE", "|E", "\\/E"] -> return [DisjElim1, DisjElim2, DisjElim3, DisjElim4]
+                                           | r `elem` ["<->I","↔I"] -> return [BicoIntro1, BicoIntro2, BicoIntro3, BicoIntro4]
+                                           | r `elem` ["<->E","↔E"]   -> return [BicoElim1, BicoElim2]
+                                           | r == "R" -> return [Reiterate]
 
-parseThomasBolducAndZachTFL :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [ThomasBolducAndZachTFL]
-parseThomasBolducAndZachTFL rtc = try parseExt <|> (map Core <$> parseThomasBolducAndZachTFLCore rtc)
+parseFosterAndLaursenTFL :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [FosterAndLaursenTFL]
+parseFosterAndLaursenTFL rtc = try parseExt <|> (map Core <$> parseFosterAndLaursenTFLCore rtc)
         where parseExt = do r <- choice (map (try . string) ["DS","MT","DNE", "DNI", "LEM","DeM", "NBD", "BMT"])
                             case r of
                                r | r == "DS"   -> return [DisSyllo1,DisSyllo2]
                                  | r == "MT"   -> return [ModTollens]
-                                 | r == "DNE"  -> return [DoubleNeg]
+                                 | r == "DNE"  -> return [DoubleNegElim]
                                  | r == "DNI"  -> return [DoubleNegIntro]
                                  | r == "LEM"  -> return [Lem1,Lem2,Lem3,Lem4]
                                  | r == "DeM"   -> return [DeMorgan1,DeMorgan2,DeMorgan3,DeMorgan4]
                                  | r == "NBD"  -> return [NegBicoDist1, NegBicoDist2]
                                  | r == "BMT"  -> return [BicoMT1, BicoMT2]
 
-parseThomasBolducAndZachTFLCoreProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine ThomasBolducAndZachTFLCore PurePropLexicon (Form Bool)]
-parseThomasBolducAndZachTFLCoreProof rtc = toDeductionFitch (parseThomasBolducAndZachTFLCore rtc) (purePropFormulaParser thomasBolducZachOpts) 
+parseFosterAndLaursenTFLCoreProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine FosterAndLaursenTFLCore PurePropLexicon (Form Bool)]
+parseFosterAndLaursenTFLCoreProof rtc = toDeductionFitch (parseFosterAndLaursenTFLCore rtc) (purePropFormulaParser thomasBolducZachOpts) 
 
-parseThomasBolducAndZachTFLProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine ThomasBolducAndZachTFL PurePropLexicon (Form Bool)]
-parseThomasBolducAndZachTFLProof rtc = toDeductionFitch (parseThomasBolducAndZachTFL rtc) (purePropFormulaParser thomasBolducZachOpts)
+parseFosterAndLaursenTFLProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine FosterAndLaursenTFL PurePropLexicon (Form Bool)]
+parseFosterAndLaursenTFLProof rtc = toDeductionFitch (parseFosterAndLaursenTFL rtc) (purePropFormulaParser thomasBolducZachOpts)
 
-parseThomasBolducAndZachTFL2019Proof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine ThomasBolducAndZachTFLCore PurePropLexicon (Form Bool)]
-parseThomasBolducAndZachTFL2019Proof rtc = toDeductionFitch (parseThomasBolducAndZachTFLCore rtc) (purePropFormulaParser thomasBolducZach2019Opts)
+parseFosterAndLaursenTFL2019Proof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine FosterAndLaursenTFLCore PurePropLexicon (Form Bool)]
+parseFosterAndLaursenTFL2019Proof rtc = toDeductionFitch (parseFosterAndLaursenTFLCore rtc) (purePropFormulaParser thomasBolducZach2019Opts)
 
-thomasBolducAndZachNotation :: String -> String 
-thomasBolducAndZachNotation x = case runParser altParser 0 "" x of
+fosterAndLaursenNotation :: String -> String 
+fosterAndLaursenNotation x = case runParser altParser 0 "" x of
                         Left e -> show e
                         Right s -> s
     where altParser = do s <- try handleAtom <|> fallback
@@ -272,29 +272,29 @@ thomasBolducAndZachNotation x = case runParser altParser 0 "" x of
           fallback = do c <- anyChar 
                         return [c]
 
-thomasBolducAndZachTFLCoreCalc = mkNDCalc 
+fosterAndLaursenTFLCoreCalc = mkNDCalc 
     { ndRenderer = FitchStyle StandardFitch
-    , ndParseProof = parseThomasBolducAndZachTFLCoreProof
+    , ndParseProof = parseFosterAndLaursenTFLCoreProof
     , ndProcessLine = hoProcessLineFitch
     , ndProcessLineMemo = Just hoProcessLineFitchMemo
     , ndParseSeq = parseSeqOver (purePropFormulaParser thomasBolducZachOpts)
     , ndParseForm = purePropFormulaParser thomasBolducZachOpts
-    , ndNotation = thomasBolducAndZachNotation
+    , ndNotation = fosterAndLaursenNotation
     }
 
-thomasBolducAndZachTFLCalc = mkNDCalc 
+fosterAndLaursenTFLCalc = mkNDCalc 
     { ndRenderer = FitchStyle StandardFitch
-    , ndParseProof = parseThomasBolducAndZachTFLProof
+    , ndParseProof = parseFosterAndLaursenTFLProof
     , ndProcessLine = hoProcessLineFitch
     , ndProcessLineMemo = Just hoProcessLineFitchMemo
     , ndParseSeq = parseSeqOver (purePropFormulaParser thomasBolducZachOpts)
     , ndParseForm = purePropFormulaParser thomasBolducZachOpts
-    , ndNotation = thomasBolducAndZachNotation
+    , ndNotation = fosterAndLaursenNotation
     }
 
-thomasBolducAndZachTFL2019Calc = mkNDCalc 
+fosterAndLaursenTFL2019Calc = mkNDCalc 
     { ndRenderer = FitchStyle StandardFitch
-    , ndParseProof = parseThomasBolducAndZachTFL2019Proof
+    , ndParseProof = parseFosterAndLaursenTFL2019Proof
     , ndProcessLine = hoProcessLineFitch
     , ndProcessLineMemo = Just hoProcessLineFitchMemo
     , ndParseSeq = parseSeqOver (purePropFormulaParser thomasBolducZach2019Opts)
