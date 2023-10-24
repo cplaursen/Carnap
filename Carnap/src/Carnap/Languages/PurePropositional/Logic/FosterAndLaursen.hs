@@ -216,7 +216,7 @@ instance Inference FosterAndLaursenTFL PurePropLexicon (Form Bool) where
 
 parseFosterAndLaursenTFLCore :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [FosterAndLaursenTFLCore]
 parseFosterAndLaursenTFLCore rtc = do r <- choice (map (try . string) [ "AS","PR","&I","/\\I", "∧I","&E","/\\E","∧E", "~I","-I", "¬I"
-                                                                   , "~E","-E", "¬E","IP","->I", ">I", "=>I", "→I","->E", "=>E", ">E", "→E", "X"
+                                                                   , "~E","-E", "¬E","IP","PBC","->I", ">I", "=>I", "→I","->E", "=>E", ">E", "→E", "X"
                                                                    , "vI","\\/I", "|I", "∨I", "vE","\\/E", "|E", "∨E","<->I", "↔I","<->E", "↔E"
                                                                    , "R"])
                                       case r of
@@ -226,7 +226,7 @@ parseFosterAndLaursenTFLCore rtc = do r <- choice (map (try . string) [ "AS","PR
                                            | r `elem` ["&E","/\\E","∧E"] -> return [ConjElim1, ConjElim2]
                                            | r `elem` ["~I","¬I","-I"]   -> return [NegeIntro1, NegeIntro2]
                                            | r `elem` ["~E","¬E","-E"]   -> return [NegeElim]
-                                           | r == "IP" -> return [Indirect1, Indirect2]
+                                           | r `elem` ["IP","PBC"]  -> return [Indirect1, Indirect2]
                                            | r `elem` ["->I", ">I", "=>I", "→I"] -> return [CondIntro1,CondIntro2]
                                            | r `elem` ["->E", ">E", "=>E", "→E"]  -> return [CondElim]
                                            | r == "X"    -> return [ContElim]
@@ -238,12 +238,12 @@ parseFosterAndLaursenTFLCore rtc = do r <- choice (map (try . string) [ "AS","PR
 
 parseFosterAndLaursenTFL :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [FosterAndLaursenTFL]
 parseFosterAndLaursenTFL rtc = try parseExt <|> (map Core <$> parseFosterAndLaursenTFLCore rtc)
-        where parseExt = do r <- choice (map (try . string) ["DS","MT","DNE", "DNI", "LEM","DeM", "NBD", "BMT"])
+        where parseExt = do r <- choice (map (try . string) ["DS","MT","DNE","~~E","¬¬E", "DNI", "~~I","¬¬I","LEM","DeM", "NBD", "BMT"])
                             case r of
                                r | r == "DS"   -> return [DisSyllo1,DisSyllo2]
                                  | r == "MT"   -> return [ModTollens]
-                                 | r == "DNE"  -> return [DoubleNegElim]
-                                 | r == "DNI"  -> return [DoubleNegIntro]
+                                 | r `elem` ["DNE","~~E", "¬¬E"] -> return [DoubleNegElim]
+                                 | r `elem` ["DNI","~~I","¬¬I"] -> return [DoubleNegIntro]
                                  | r == "LEM"  -> return [Lem1,Lem2,Lem3,Lem4]
                                  | r == "DeM"   -> return [DeMorgan1,DeMorgan2,DeMorgan3,DeMorgan4]
                                  | r == "NBD"  -> return [NegBicoDist1, NegBicoDist2]
