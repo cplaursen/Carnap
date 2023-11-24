@@ -50,6 +50,7 @@ data FosterAndLaursenTFL = Core FosterAndLaursenTFLCore
                             | DeMorgan1    | DeMorgan2
                             | DeMorgan3    | DeMorgan4
                             | NegBicoDist1 | NegBicoDist2 
+                            | NegBicoDist3 | NegBicoDist4
                             | BicoMT1      | BicoMT2
                             deriving (Eq)
                             --skipping derived rules for now
@@ -66,7 +67,7 @@ instance Show FosterAndLaursenTFLCore where
         show CondIntro1   = "→I"
         show CondIntro2   = "→I"
         show CondElim     = "→E"
-        show ContElim     = "X"
+        show ContElim     = "⊥E"
         show DisjElim1    = "∨E"
         show DisjElim2    = "∨E"
         show DisjElim3    = "∨E"
@@ -100,6 +101,8 @@ instance Show FosterAndLaursenTFL where
         show DeMorgan4    = "DeM"
         show NegBicoDist1 = "NBD"
         show NegBicoDist2 = "NBD"
+        show NegBicoDist3 = "NBD"
+        show NegBicoDist4 = "NBD"
         show BicoMT1      = "BMT"
         show BicoMT2      = "BMT"
 
@@ -181,6 +184,8 @@ instance Inference FosterAndLaursenTFL PurePropLexicon (Form Bool) where
         ruleOf DeMorgan4  = deMorgansLaws !! 3
         ruleOf NegBicoDist1 = negatedBiconditionalVariations !! 0
         ruleOf NegBicoDist2 = negatedBiconditionalVariations !! 1
+        ruleOf NegBicoDist3 = negatedBiconditionalVariations' !! 0
+        ruleOf NegBicoDist4 = negatedBiconditionalVariations' !! 1
         ruleOf BicoMT1    = biconditionalTollensVariations !! 0
         ruleOf BicoMT2    = biconditionalTollensVariations !! 1
 
@@ -215,21 +220,21 @@ instance Inference FosterAndLaursenTFL PurePropLexicon (Form Bool) where
         restriction _ = Nothing
 
 parseFosterAndLaursenTFLCore :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [FosterAndLaursenTFLCore]
-parseFosterAndLaursenTFLCore rtc = do r <- choice (map (try . string) [ "AS","PR","&I","/\\I", "∧I","&E","/\\E","∧E", "~I","-I", "¬I"
-                                                                   , "~E","-E", "¬E","IP","PBC","->I", ">I", "=>I", "→I","->E", "=>E", ">E", "→E", "X"
+parseFosterAndLaursenTFLCore rtc = do r <- choice (map (try . string) [ "AS","PR","&I","/\\I", "∧I", "^I", "&E","/\\E","∧E","^E","~I","-I", "¬I"
+                                                                   , "~E","-E", "¬E","IP","PBC","->I", ">I", "=>I", "→I","->E", "=>E", ">E", "→E", "⊥E", "_|_E", "X"
                                                                    , "vI","\\/I", "|I", "∨I", "vE","\\/E", "|E", "∨E","<->I", "↔I","<->E", "↔E"
                                                                    , "R"])
                                       case r of
                                          r | r == "AS"   -> return [As]
                                            | r == "PR" -> return [Pr (problemPremises rtc)]
-                                           | r `elem` ["&I","/\\I","∧I"] -> return [ConjIntro]
-                                           | r `elem` ["&E","/\\E","∧E"] -> return [ConjElim1, ConjElim2]
+                                           | r `elem` ["&I","/\\I","∧I","^I"] -> return [ConjIntro]
+                                           | r `elem` ["&E","/\\E","∧E","^E"] -> return [ConjElim1, ConjElim2]
                                            | r `elem` ["~I","¬I","-I"]   -> return [NegeIntro1, NegeIntro2]
                                            | r `elem` ["~E","¬E","-E"]   -> return [NegeElim]
                                            | r `elem` ["IP","PBC"]  -> return [Indirect1, Indirect2]
                                            | r `elem` ["->I", ">I", "=>I", "→I"] -> return [CondIntro1,CondIntro2]
                                            | r `elem` ["->E", ">E", "=>E", "→E"]  -> return [CondElim]
-                                           | r == "X"    -> return [ContElim]
+                                           | r `elem` ["X", "_|_E", "⊥E"]    -> return [ContElim]
                                            | r `elem` ["∨I","vI", "|I", "\\/I"] -> return [DisjIntro1, DisjIntro2]
                                            | r `elem` ["∨E","vE", "|E", "\\/E"] -> return [DisjElim1, DisjElim2, DisjElim3, DisjElim4]
                                            | r `elem` ["<->I","↔I"] -> return [BicoIntro1, BicoIntro2, BicoIntro3, BicoIntro4]
@@ -238,15 +243,15 @@ parseFosterAndLaursenTFLCore rtc = do r <- choice (map (try . string) [ "AS","PR
 
 parseFosterAndLaursenTFL :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [FosterAndLaursenTFL]
 parseFosterAndLaursenTFL rtc = try parseExt <|> (map Core <$> parseFosterAndLaursenTFLCore rtc)
-        where parseExt = do r <- choice (map (try . string) ["DS","MT","DNE","~~E","¬¬E", "DNI", "~~I","¬¬I","LEM","DeM", "NBD", "BMT"])
+        where parseExt = do r <- choice (map (try . string) ["DS","MT","DNE","~~E","¬¬E","--E", "DNI", "~~I","¬¬I","--I","LEM","DeM", "NBD", "BMT"])
                             case r of
                                r | r == "DS"   -> return [DisSyllo1,DisSyllo2]
                                  | r == "MT"   -> return [ModTollens]
-                                 | r `elem` ["DNE","~~E", "¬¬E"] -> return [DoubleNegElim]
-                                 | r `elem` ["DNI","~~I","¬¬I"] -> return [DoubleNegIntro]
+                                 | r `elem` ["DNE","~~E", "¬¬E","--E"] -> return [DoubleNegElim]
+                                 | r `elem` ["DNI","~~I","¬¬I","--I"] -> return [DoubleNegIntro]
                                  | r == "LEM"  -> return [Lem1,Lem2,Lem3,Lem4]
                                  | r == "DeM"   -> return [DeMorgan1,DeMorgan2,DeMorgan3,DeMorgan4]
-                                 | r == "NBD"  -> return [NegBicoDist1, NegBicoDist2]
+                                 | r == "NBD"  -> return [NegBicoDist1, NegBicoDist2, NegBicoDist3, NegBicoDist4]
                                  | r == "BMT"  -> return [BicoMT1, BicoMT2]
 
 parseFosterAndLaursenTFLCoreProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine FosterAndLaursenTFLCore PurePropLexicon (Form Bool)]

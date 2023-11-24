@@ -620,6 +620,16 @@ negatedBiconditionalVariations = [
                 ] ∴ GammaV 1 :|-: SS (lneg $ phin 1 .↔. phin 2)
             ]
 
+negatedBiconditionalVariations' :: BooleanRuleVariants lex b
+negatedBiconditionalVariations' = [
+                [ GammaV 1 :|-: SS (lneg $ phin 1 .↔. phin 2)
+                ] ∴ GammaV 1 :|-: SS (phin 1 .↔. (lneg (phin 2)))
+            ,
+                [ GammaV 1 :|-: SS (phin 1 .↔. (lneg (phin 2)))
+                ] ∴ GammaV 1 :|-: SS (lneg $ phin 1 .↔. phin 2)
+            ]
+
+
 deMorgansNegatedOr :: BooleanRuleVariants lex b
 deMorgansNegatedOr = [
                 [ GammaV 1 :|-: SS (lneg $ phin 1 .∨. phin 2)
