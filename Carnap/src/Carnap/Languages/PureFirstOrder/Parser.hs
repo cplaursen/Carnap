@@ -3,7 +3,7 @@ module Carnap.Languages.PureFirstOrder.Parser
 ( folFormulaParser, folFormulaParserRelaxed, mfolFormulaParser
 , arthurFOLFormulaParser, magnusFOLFormulaParser, gallowPLFormulaParser, thomasBolducAndZachFOLFormulaParser
 , gamutNDFormulaParser, thomasBolducAndZachFOL2019FormulaParser, thomasBolducAndZachFOL2019FormulaParserStrict
-, hardegreePLFormulaParser, belotPDFormulaParser, belotPDEFormulaParser
+, fosterLaursenFOLFormulaParser, hardegreePLFormulaParser, belotPDFormulaParser, belotPDEFormulaParser
 , bergmannMoorAndNelsonPDFormulaParser, bergmannMoorAndNelsonPDEFormulaParser
 , gregoryPDFormulaParser, goldfarbNDFormulaParser, tomassiQLFormulaParser, hurleyPLFormulaParser
 , hausmanPLFormulaParser, cortensQLFormulaParser, lemmonQuantFormulaParser, landeQuantFormulaParser
@@ -162,6 +162,11 @@ thomasBolducAndZachFOL2019ParserOptions = thomasBolducAndZachFOLParserOptions
 
 thomasBolducAndZachFOL2019ParserOptionsStrict :: FirstOrderParserOptions PureLexiconFOL u Identity
 thomasBolducAndZachFOL2019ParserOptionsStrict = thomasBolducAndZachFOL2019ParserOptions { opTable = calgaryOpTable}
+
+fosterLaursenFOLParserOptions :: FirstOrderParserOptions PureLexiconFOL u Identity
+fosterLaursenFOLParserOptions = thomasBolducAndZachFOLParserOptions { parenRecur = \opt recurWith -> parenParser (recurWith opt)
+                                                                    , opTable = fosterLaursenOpTable
+                                                                    }
 
 gallowPLParserOptions :: FirstOrderParserOptions PureLexiconFOL u Identity
 gallowPLParserOptions = magnusFOLParserOptions { freeVarParser = parseFreeVar "wxyz"
@@ -422,10 +427,13 @@ gamutNDFormulaParser = parserFromOptions gamutNDParserOptions
 thomasBolducAndZachFOL2019FormulaParser :: Parsec String u PureFOLForm
 thomasBolducAndZachFOL2019FormulaParser = parserFromOptions thomasBolducAndZachFOL2019ParserOptions
 
+fosterLaursenFOLFormulaParser :: Parsec String u PureFOLForm
+fosterLaursenFOLFormulaParser = parserFromOptions fosterLaursenFOLParserOptions
+
 hardegreePLFormulaParser :: Parsec String u PureFOLForm
 hardegreePLFormulaParser = parserFromOptions hardegreePLParserOptions
 
-goldfarbNDFormulaParser:: Parsec String u PureFOLForm
+goldfarbNDFormulaParser :: Parsec String u PureFOLForm
 goldfarbNDFormulaParser = parserFromOptions goldfarbNDParserOptions
 
 bergmannMoorAndNelsonPDFormulaParser :: Parsec String u PureFOLForm

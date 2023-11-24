@@ -183,24 +183,24 @@ parseFosterAndLaursenFOL rtc = try premRule <|> try (map TFL <$> parseProp) <|> 
           premRule = string "PR" >> return [FOL $ Pr (problemPremises rtc)] --short-circuit TFL from handling premises
 
 parseFosterAndLaursenFOL2019Proof :: RuntimeDeductionConfig PureLexiconFOL (Form Bool) -> String -> [DeductionLine FosterAndLaursenFOLCore PureLexiconFOL (Form Bool)]
-parseFosterAndLaursenFOL2019Proof ders = toDeductionFitch (parseFosterAndLaursenFOLCore ders) thomasBolducAndZachFOL2019FormulaParser
+parseFosterAndLaursenFOL2019Proof ders = toDeductionFitch (parseFosterAndLaursenFOLCore ders) fosterLaursenFOLFormulaParser
 
 parseFosterAndLaursenFOLPlus2019Proof :: RuntimeDeductionConfig PureLexiconFOL (Form Bool) -> String -> [DeductionLine FosterAndLaursenFOL PureLexiconFOL (Form Bool)]
-parseFosterAndLaursenFOLPlus2019Proof ders = toDeductionFitch (parseFosterAndLaursenFOL ders) thomasBolducAndZachFOL2019FormulaParser
+parseFosterAndLaursenFOLPlus2019Proof ders = toDeductionFitch (parseFosterAndLaursenFOL ders) fosterLaursenFOLFormulaParser
 
 parseFosterAndLaursenFOLProof :: RuntimeDeductionConfig PureLexiconFOL (Form Bool) -> String -> [DeductionLine FosterAndLaursenFOL PureLexiconFOL (Form Bool)]
-parseFosterAndLaursenFOLProof ders = toDeductionFitch (parseFosterAndLaursenFOL ders) thomasBolducAndZachFOLFormulaParser
+parseFosterAndLaursenFOLProof ders = toDeductionFitch (parseFosterAndLaursenFOL ders) fosterLaursenFOLFormulaParser
 
 parseFosterAndLaursenFOLCoreProof :: RuntimeDeductionConfig PureLexiconFOL (Form Bool) -> String -> [DeductionLine FosterAndLaursenFOLCore PureLexiconFOL (Form Bool)]
-parseFosterAndLaursenFOLCoreProof ders = toDeductionFitch (parseFosterAndLaursenFOLCore ders) thomasBolducAndZachFOLFormulaParser
+parseFosterAndLaursenFOLCoreProof ders = toDeductionFitch (parseFosterAndLaursenFOLCore ders) fosterLaursenFOLFormulaParser
 
 fosterAndLaursenFOLCalc = mkNDCalc
     { ndRenderer = FitchStyle StandardFitch
     , ndParseProof = parseFosterAndLaursenFOLProof
     , ndProcessLine = hoProcessLineFitch
     , ndProcessLineMemo = Just hoProcessLineFitchMemo
-    , ndParseSeq = parseSeqOver thomasBolducAndZachFOLFormulaParser
-    , ndParseForm = thomasBolducAndZachFOLFormulaParser
+    , ndParseSeq = parseSeqOver fosterLaursenFOLFormulaParser
+    , ndParseForm = fosterLaursenFOLFormulaParser
     , ndNotation = ndNotation P.fosterAndLaursenTFLCalc
     }
 
@@ -209,8 +209,8 @@ fosterAndLaursenFOLCoreCalc = mkNDCalc
     , ndParseProof = parseFosterAndLaursenFOLCoreProof
     , ndProcessLine = hoProcessLineFitch
     , ndProcessLineMemo = Just hoProcessLineFitchMemo
-    , ndParseSeq = parseSeqOver thomasBolducAndZachFOLFormulaParser
-    , ndParseForm = thomasBolducAndZachFOLFormulaParser
+    , ndParseSeq = parseSeqOver fosterLaursenFOLFormulaParser
+    , ndParseForm = fosterLaursenFOLFormulaParser
     , ndNotation = ndNotation P.fosterAndLaursenTFLCalc
     }
 
@@ -219,8 +219,8 @@ fosterAndLaursenFOL2019Calc = mkNDCalc
     , ndParseProof = parseFosterAndLaursenFOL2019Proof
     , ndProcessLine = hoProcessLineFitch
     , ndProcessLineMemo = Just hoProcessLineFitchMemo
-    , ndParseSeq = parseSeqOver thomasBolducAndZachFOL2019FormulaParser
-    , ndParseForm = thomasBolducAndZachFOL2019FormulaParser
+    , ndParseSeq = parseSeqOver fosterLaursenFOLFormulaParser
+    , ndParseForm = fosterLaursenFOLFormulaParser
     , ndNotation = ndNotation P.fosterAndLaursenTFL2019Calc
     }
 
@@ -229,7 +229,7 @@ fosterAndLaursenFOLPlus2019Calc = mkNDCalc
     , ndParseProof = parseFosterAndLaursenFOLPlus2019Proof
     , ndProcessLine = hoProcessLineFitch
     , ndProcessLineMemo = Just hoProcessLineFitchMemo
-    , ndParseSeq = parseSeqOver thomasBolducAndZachFOL2019FormulaParser
-    , ndParseForm = thomasBolducAndZachFOL2019FormulaParser
+    , ndParseSeq = parseSeqOver fosterLaursenFOLFormulaParser
+    , ndParseForm = fosterLaursenFOLFormulaParser
     , ndNotation = ndNotation P.fosterAndLaursenTFL2019Calc
     }

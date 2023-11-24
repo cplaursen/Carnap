@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
 module Carnap.Languages.PurePropositional.Parser 
     ( purePropFormulaParser, standardLetters, standardLettersStrict, extendedLetters, landeOpts, belotOpts, hausmanOpts
-    , thomasBolducZachOpts, thomasBolducZach2019Opts, hardegreeOpts, arthurOpts, standardOpTable, standardOpTableStrict
-    , calgaryOpTable, calgary2019OpTable, hausmanOpTable, howardSnyderOpTable, gamutOpTable
+    , thomasBolducZachOpts, thomasBolducZach2019Opts, fosterLaursenOpts, hardegreeOpts, arthurOpts, standardOpTable, standardOpTableStrict
+    , calgaryOpTable, calgary2019OpTable, hausmanOpTable, howardSnyderOpTable, gamutOpTable, fosterLaursenOpTable
     , gamutOpts, bonevacOpts, howardSnyderOpts, hurleyOpts, gregoryOpts, magnusOpts, extendedPropSeqParser
     , englishPropFormulaParser, englishPropFormulaParserStrict
     ) where
@@ -94,6 +94,9 @@ thomasBolducZachOpts = magnusOpts { hasBooleanConstants = True
 thomasBolducZach2019Opts :: Monad m => PurePropositionalParserOptions u m
 thomasBolducZach2019Opts = thomasBolducZachOpts { opTable = calgary2019OpTable }
 
+fosterLaursenOpts :: Monad m => PurePropositionalParserOptions u m
+fosterLaursenOpts = extendedLetters { opTable = fosterLaursenOpTable }
+
 hurleyOpts ::  Monad m => PurePropositionalParserOptions u m
 hurleyOpts = hausmanOpts
 
@@ -181,6 +184,15 @@ howardSnyderOpTable = [[ Prefix (try parseNeg)
                        , Infix (try parseIf) AssocNone
                        , Infix (try parseIff) AssocNone
                        ]]
+
+fosterLaursenOpTable :: (BooleanLanguage (FixLang lex (Form Bool)), Monad m)
+    => [[Operator String u m (FixLang lex (Form Bool))]]
+fosterLaursenOpTable = [ [ Prefix (try parseNeg) ]
+                       , [ Infix (try parseOr) AssocRight
+                         , Infix (try parseAnd) AssocRight ]
+                       , [ Infix (try parseIf) AssocRight
+                         , Infix (try parseIff) AssocNone]
+                       ]
 
 -----------------------
 --  Special Parsers  --

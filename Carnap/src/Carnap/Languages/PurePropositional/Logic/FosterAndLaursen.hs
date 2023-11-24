@@ -255,13 +255,13 @@ parseFosterAndLaursenTFL rtc = try parseExt <|> (map Core <$> parseFosterAndLaur
                                  | r == "BMT"  -> return [BicoMT1, BicoMT2]
 
 parseFosterAndLaursenTFLCoreProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine FosterAndLaursenTFLCore PurePropLexicon (Form Bool)]
-parseFosterAndLaursenTFLCoreProof rtc = toDeductionFitch (parseFosterAndLaursenTFLCore rtc) (purePropFormulaParser thomasBolducZachOpts) 
+parseFosterAndLaursenTFLCoreProof rtc = toDeductionFitch (parseFosterAndLaursenTFLCore rtc) (purePropFormulaParser fosterLaursenOpts) 
 
 parseFosterAndLaursenTFLProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine FosterAndLaursenTFL PurePropLexicon (Form Bool)]
-parseFosterAndLaursenTFLProof rtc = toDeductionFitch (parseFosterAndLaursenTFL rtc) (purePropFormulaParser thomasBolducZachOpts)
+parseFosterAndLaursenTFLProof rtc = toDeductionFitch (parseFosterAndLaursenTFL rtc) (purePropFormulaParser fosterLaursenOpts)
 
 parseFosterAndLaursenTFL2019Proof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> String -> [DeductionLine FosterAndLaursenTFLCore PurePropLexicon (Form Bool)]
-parseFosterAndLaursenTFL2019Proof rtc = toDeductionFitch (parseFosterAndLaursenTFLCore rtc) (purePropFormulaParser thomasBolducZach2019Opts)
+parseFosterAndLaursenTFL2019Proof rtc = toDeductionFitch (parseFosterAndLaursenTFLCore rtc) (purePropFormulaParser fosterLaursenOpts)
 
 fosterAndLaursenNotation :: String -> String 
 fosterAndLaursenNotation x = case runParser altParser 0 "" x of
@@ -282,8 +282,8 @@ fosterAndLaursenTFLCoreCalc = mkNDCalc
     , ndParseProof = parseFosterAndLaursenTFLCoreProof
     , ndProcessLine = hoProcessLineFitch
     , ndProcessLineMemo = Just hoProcessLineFitchMemo
-    , ndParseSeq = parseSeqOver (purePropFormulaParser thomasBolducZachOpts)
-    , ndParseForm = purePropFormulaParser thomasBolducZachOpts
+    , ndParseSeq = parseSeqOver (purePropFormulaParser fosterLaursenOpts)
+    , ndParseForm = purePropFormulaParser fosterLaursenOpts
     , ndNotation = fosterAndLaursenNotation
     }
 
@@ -292,8 +292,8 @@ fosterAndLaursenTFLCalc = mkNDCalc
     , ndParseProof = parseFosterAndLaursenTFLProof
     , ndProcessLine = hoProcessLineFitch
     , ndProcessLineMemo = Just hoProcessLineFitchMemo
-    , ndParseSeq = parseSeqOver (purePropFormulaParser thomasBolducZachOpts)
-    , ndParseForm = purePropFormulaParser thomasBolducZachOpts
+    , ndParseSeq = parseSeqOver (purePropFormulaParser fosterLaursenOpts)
+    , ndParseForm = purePropFormulaParser fosterLaursenOpts
     , ndNotation = fosterAndLaursenNotation
     }
 
