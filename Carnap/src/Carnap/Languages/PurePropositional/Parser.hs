@@ -95,7 +95,9 @@ thomasBolducZach2019Opts :: Monad m => PurePropositionalParserOptions u m
 thomasBolducZach2019Opts = thomasBolducZachOpts { opTable = calgary2019OpTable }
 
 fosterLaursenOpts :: Monad m => PurePropositionalParserOptions u m
-fosterLaursenOpts = extendedLetters { opTable = fosterLaursenOpTable }
+fosterLaursenOpts = extendedLetters { hasBooleanConstants = True
+                                    , opTable = fosterLaursenOpTable
+                                    }
 
 hurleyOpts ::  Monad m => PurePropositionalParserOptions u m
 hurleyOpts = hausmanOpts

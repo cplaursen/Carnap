@@ -164,9 +164,9 @@ thomasBolducAndZachFOL2019ParserOptionsStrict :: FirstOrderParserOptions PureLex
 thomasBolducAndZachFOL2019ParserOptionsStrict = thomasBolducAndZachFOL2019ParserOptions { opTable = calgaryOpTable}
 
 fosterLaursenFOLParserOptions :: FirstOrderParserOptions PureLexiconFOL u Identity
-fosterLaursenFOLParserOptions = thomasBolducAndZachFOLParserOptions { parenRecur = \opt recurWith -> parenParser (recurWith opt)
-                                                                    , opTable = fosterLaursenOpTable
-                                                                    }
+fosterLaursenFOLParserOptions = thomasBolducAndZachFOL2019ParserOptions { parenRecur = \opt recurWith -> parenParser (recurWith opt)
+                                                                        , opTable = fosterLaursenOpTable
+                                                                        }
 
 gallowPLParserOptions :: FirstOrderParserOptions PureLexiconFOL u Identity
 gallowPLParserOptions = magnusFOLParserOptions { freeVarParser = parseFreeVar "wxyz"
