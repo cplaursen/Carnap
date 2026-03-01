@@ -31,6 +31,36 @@ If you're interested in contributing to software development or modifying the
 software, read on. This README will help you set up a development environment
 for building the server-side and client-side components used on carnap.io.
 
+## CLI Proof Checker
+
+Carnap includes a command-line proof checker (`carnap-check`) that lets you
+verify natural deduction proofs from plain text files, without running the web
+server.
+
+### Building
+
+```bash
+stack build Carnap:exe:carnap-check
+```
+
+### Quick start
+
+```bash
+# Check a propositional logic proof
+stack exec carnap-check -- prop proof.txt
+
+# Check a first-order logic proof
+stack exec carnap-check -- firstOrder proof.txt
+
+# List all available logical systems
+stack exec carnap-check -- --list
+```
+
+The tool supports all of Carnap's propositional and first-order natural
+deduction systems (over 80 in total). See
+[Carnap/cli/README.md](Carnap/cli/README.md) for detailed usage instructions
+and proof format examples.
+
 ## Development
 
 ### General information
