@@ -81,7 +81,7 @@ optionsFromMap opts = CheckerOptions { submit = Nothing
                 where optlist = case M.lookup "options" opts of Just s -> words s; Nothing -> []
 
 checkerWith :: CheckerOptions -> (CheckerOptions -> Document -> IORef Bool -> String -> (Element, Element) -> IO ()) -> IOGoal -> Document -> IO ()
-checkerWith options updateres iog@(IOGoal i o g content _) w = do
+checkerWith options updaters iog@(IOGoal i o g content opts) w = do
            ref <- newIORef False
            elts <- mapM (createElement w . Just) ["div","div","div","div","div","div"]
            let [Just fd, Just nd, Just sd, Just sucd, Just incompleteAlert, Just aligner] = elts
@@ -91,6 +91,17 @@ checkerWith options updateres iog@(IOGoal i o g content _) w = do
            setAutocorrect (castToHTMLTextAreaElement i) False
            setAttribute i "data-gramm" "false" -- attempt to disable grammarly
            setInnerHTML i (Just (trim content))
+           pageId <- getPageId
+           let exerciseId = case M.lookup "submission" opts of
+                                Just s | take 7 s == "saveAs:" -> drop 7 s
+                                _ -> case M.lookup "goal" opts of
+                                         Just g' -> g'
+                                         Nothing -> trim content
+               storageKey = "carnap:" ++ pageId ++ ":proofchecker:" ++ exerciseId
+           msaved <- localStorageGetItem storageKey
+           case msaved of
+                Just saved | not (null (trim saved)) -> setValue (castToHTMLTextAreaElement i) (Just saved)
+                _ -> return ()
            setAttribute aligner "class" "aligner"
            setAttribute fd "class" "proofFeedback"
            setAttribute nd "class" "numbering"
@@ -110,7 +121,7 @@ checkerWith options updateres iog@(IOGoal i o g content _) w = do
            mapM_ (appendChild par . Just) [aligner,bw]
            syncScroll i o
            --respond to custom initialize events
-           initlistener <- newListener $ updateWithValue (\s -> updateres options w ref s (g,fd))
+           initlistener <- newListener $ updateWithValue (\s -> updaters options w ref s (g,fd))
            addListener i initialize initlistener False                
            when (autoIndent options) $ do
                    indentlistener <- newListener (onEnter reindent)
@@ -138,29 +149,35 @@ checkerWith options updateres iog@(IOGoal i o g content _) w = do
                    appendChild bw (Just bt)
                    btlistener <- newListener $ liftIO $
                                     do miv <-  getValue (castToHTMLTextAreaElement i)
-                                       case miv of Just iv -> updateres options {feedback = Full} w ref iv (g, fd)
+                                       case miv of Just iv -> updaters options {feedback = Full} w ref iv (g, fd)
                                                    Nothing -> return ()
                    addListener bt click btlistener True
                _ -> return ()
-           kblistener <- newListener $ updateWithValue (\s -> updateres options w ref s (g,fd))
+           kblistener <- newListener $ updateWithValue (\s -> updaters options w ref s (g,fd))
            addListener i keyUp kblistener False
+           savelistener <- newListener $ updateWithValue (\s -> localStorageSetItem storageKey s)
+           addListener i input savelistener False
            when (popout options) $ do
                btpop <- expandButton w "Expand"
                appendChild bw (Just btpop)
-               thepopout <- newListener $ liftIO $ popoutWith options updateres iog w
+               thepopout <- newListener $ liftIO $ popoutWith options updaters iog w
                addListener btpop click thepopout False
            lineupd <- newListener $ updateLines w nd options
            clearThePoppers <- newListener $ clearPoppers aligner
            addListener i keyUp lineupd False
            addListener i keyUp clearThePoppers False
            mv <- getValue (castToHTMLTextAreaElement i)
-           case mv of
+           let effectiveContent = case mv of
+                                     Just iv | not (null (trim iv)) -> Just iv
+                                     _ | not (null (trim content)) -> Just (trim content)
+                                     _ -> Nothing
+           case effectiveContent of
                Nothing -> setLinesTo w nd options [" "]
-               (Just iv) -> do setLinesTo w nd options (altlines iv)
-                               if initialUpdate options then updateres options w ref iv (g, fd) else return ()
+               Just iv -> do setLinesTo w nd options (altlines iv)
+                             when (initialUpdate options || not (null (trim iv))) $ updaters options w ref iv (g, fd)
 
 popoutWith :: CheckerOptions -> (CheckerOptions -> Document -> IORef Bool -> String -> (Element, Element) -> IO ()) -> IOGoal -> Document -> IO ()
-popoutWith options updateres iog@(IOGoal i o g content opts) dom = do
+popoutWith options updaters iog@(IOGoal i o g content opts) dom = do
             (Just win) <- getDefaultView dom
             (Just popwin) <- open win "" "" ""
             (Just popdom) <- getDocument popwin 
@@ -182,7 +199,7 @@ popoutWith options updateres iog@(IOGoal i o g content opts) dom = do
             setAttribute body "data-carnap-options" optstring
             setAttribute body "data-carnap-type" "proofchecker"
             mapM (appendChild body . Just) [g', i', o']
-            checkerWith newOptions updateres (IOGoal i' o' g' content opts) popdom
+            checkerWith newOptions updaters (IOGoal i' o' g' content opts) popdom
 
 updateLines :: (IsElement e) => Document -> e -> CheckerOptions -> EventM HTMLTextAreaElement KeyboardEvent ()
 updateLines w nd options =  do (Just t) <- target :: EventM HTMLTextAreaElement KeyboardEvent (Maybe HTMLTextAreaElement)

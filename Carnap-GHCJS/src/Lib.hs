@@ -10,7 +10,8 @@ module Lib ( genericSendJSON, sendJSON, onEnter, onKey, doOnce, dispatchCustom, 
            , toCleanVal, popUpWith, spinnerSVG, doneButton, questionButton
            , exclaimButton, expandButton, createSubmitButton, createButtonWrapper
            , maybeNodeListToList, trySubmit, inOpts, rewriteWith, setStatus, setSuccess, setFailure
-           , ButtonStatus(..) , keyString) where
+           , ButtonStatus(..) , keyString
+           , localStorageSetItem, localStorageGetItem, getPageId) where
 
 import Data.Aeson
 import Data.Maybe (catMaybes)
@@ -556,6 +557,23 @@ foreign import javascript unsafe "try {new Popper($1,$2,{placement:\"right\"});}
 foreign import javascript unsafe "window.Carnap = {};" initCallbackObj :: IO ()
 --"window.VAR" is apparently best practice for declaring global vars
 
+foreign import javascript unsafe "(function(){ try { localStorage.setItem($1, $2); } catch(e) { return; } })()" localStorageSetItemJS :: JSString -> JSString -> IO ()
+
+foreign import javascript unsafe "localStorage.getItem($1)" localStorageGetItemRaw :: JSString -> IO JSVal
+
+foreign import javascript unsafe "window.location.pathname" locationPathnameJS :: IO JSString
+
+localStorageSetItem :: String -> String -> IO ()
+localStorageSetItem k v = localStorageSetItemJS (toJSString k) (toJSString v)
+
+localStorageGetItem :: String -> IO (Maybe String)
+localStorageGetItem k = do v <- localStorageGetItemRaw (toJSString k)
+                           ms <- fromJSVal v :: IO (Maybe JSString)
+                           return (fmap fromJSString ms)
+
+getPageId :: IO String
+getPageId = fromJSString <$> locationPathnameJS
+
 foreign import javascript unsafe "Carnap[$1]=$2;" initializeCallbackJS :: JSString-> Callback (payload -> succ -> IO ()) -> IO ()
 --TODO: unify with other callback code in SequentCheck
 
@@ -627,6 +645,15 @@ makePopper :: Element -> Element -> IO ()
 makePopper = Prelude.error "makePopper requires the GHCJS FFI"
 
 currentUrl = Prelude.error "currentUrl requires the GHCJS FFI"
+
+localStorageSetItem :: String -> String -> IO ()
+localStorageSetItem = Prelude.error "localStorageSetItem requires the GHCJS FFI"
+
+localStorageGetItem :: String -> IO (Maybe String)
+localStorageGetItem = Prelude.error "localStorageGetItem requires the GHCJS FFI"
+
+getPageId :: IO String
+getPageId = Prelude.error "getPageId requires the GHCJS FFI"
 
 message s = liftIO (alert s)
 
